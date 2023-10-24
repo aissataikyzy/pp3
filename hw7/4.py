@@ -46,7 +46,6 @@ def calc(key):
     elif key == "C":
         calc_entry.delete(0, END)
 
-
     elif key == "±":
         if "=" in calc_entry.get():
             calc_entry.delete(0, END)
@@ -57,6 +56,9 @@ def calc(key):
                 calc_entry.insert(0, "-")
         except IndexError:
             pass
+    
+    elif key == "%":
+        calc_entry.insert(END, "/100")
 
     elif key == "π":
         calc_entry.insert(END, math.pi)
@@ -65,14 +67,26 @@ def calc(key):
         root.after(1,root.destroy)
         sys.exit    
 
+    elif key == ",":
+        calc_entry.insert(END, ",")
+
     elif key == "x²":
-        calc_entry.insert(END, "**")
+        calc_entry.insert(END, "**2")
 
     elif key == "x³":
-        calc_entry.insert(END, "**")
+        calc_entry.insert(END, "**3")
         
     elif key == "xʸ":
-        calc_entry.insert(END, "**")
+        calc_entry.insert(END, "**y")
+
+    elif key == "1/x":
+        calc_entry.insert(END, "**(-1)")
+
+    elif key == "10ˣ":
+        calc_entry.insert(END, "10**" + calc_entry.get())
+
+    elif key == "e":
+        calc_entry.insert(END, "2.71828183")
 
     elif key == "eˣ":
         calc_entry.insert(END, math.exp(calc_entry.get()))
@@ -83,6 +97,18 @@ def calc(key):
     elif key == "cos":
         calc_entry.insert(END, "=" + str(math.cos(int(calc_entry.get()))))
 
+    elif key == "tan":
+        calc_entry.insert(END, "=" + str(math.tan(int(calc_entry.get()))))
+
+    elif key == "sinh":
+        calc_entry.insert(END, "=" + str(math.sinh(int(calc_entry.get()))))
+
+    elif key == "cosh":
+        calc_entry.insert(END, "=" + str(math.cosh(int(calc_entry.get()))))
+
+    elif key == "tanh":
+        calc_entry.insert(END, "=" + str(math.tanh(int(calc_entry.get()))))
+
     elif key == "(":
         calc_entry.insert(END, "(")
     elif key == ")":
@@ -91,8 +117,23 @@ def calc(key):
     elif key == "x!":
         calc_entry.insert(END, "=" + str(math.factorial(int(calc_entry.get()))))
 
-    elif key == "√2":
-        calc_entry.insert(END, "=" + str(math.sqrt(int(calc_entry.get()))))
+    elif key == "²√x":
+        calc_entry.insert(END, "**1/2")
+
+    elif key == "³√x":
+        calc_entry.insert(END, "**1/3")
+
+    elif key == "ʸ√x":
+        calc_entry.insert(END, "**1/" + calc_entry.get())
+
+    elif key == 'ln':
+        calc_entry.insert(0, str(math.log(int(calc_entry.get()), math.e)))
+        calc_entry.insert(END, eval(str(math.log(int(calc_entry.get()), math.e))))
+
+    elif key == 'log':
+        q = calc_entry.get()
+        calc_entry.delete(0, END)
+        calc_entry.insert(END, eval(str(math.log(int(q), 10))))
 
     else:
         if "=" in calc_entry.get():
