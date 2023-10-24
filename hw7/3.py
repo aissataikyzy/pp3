@@ -1,3 +1,4 @@
+#Обычный калькулятор
 import tkinter as tk
 
 def add_digit(digit):
