@@ -4,33 +4,34 @@ from tkinter import ttk
 import math
 import sys
 
-root = Tk() 
+root = Tk()
 root.title("Calculator")
 
 bttn_list = [
-"7", "8", "9", "*", "2ⁿᵈ", "x²", "x³", "xʸ", "eˣ", "10ˣ", "Exit",
-"4", "5", "6", "-", "1/x", "²√x", "³√x", "ʸ√x", "ln", "log₁₀", "±",
-"1", "2", "3",  "+", "x!", "sin", "cos", "tan", "e", "(", ")",
-"0", "C", "=",  "/", "Rad", "sinh", "cosh", "tanh", "π", "%", ",",]
+    "7", "8", "9", "*", "2ⁿᵈ", "x²", "x³", "xʸ", "eˣ", "10ˣ", "Exit",
+    "4", "5", "6", "-", "1/x", "²√x", "³√x", "ʸ√x", "ln", "log₁₀", "±",
+    "1", "2", "3", "+", "x!", "sin", "cos", "tan", "e", "(", ")",
+    "0", "C", "=", "/", "Rad", "sinh", "cosh", "tanh", "π", "%", ",", ]
 r = 1
 c = 0
 for i in bttn_list:
     rel = ""
-    cmd=lambda x=i: calc(x)
-    ttk.Button(root, text=i, command = cmd, width = 10).grid(row=r, column = c)
+    cmd = lambda x=i: calc(x)
+    ttk.Button(root, text=i, command=cmd, width=10).grid(row=r, column=c)
     c += 1
     if c > 10:
         c = 0
         r += 1
-    
-calc_entry = Entry(root, width = 60)
+
+calc_entry = Entry(root, width=60)
 calc_entry.grid(row=0, column=0, columnspan=5)
+
 
 def calc(key):
     global memory
     if key == "=":
 
-        str1 = "-+0123456789.*/)(" 
+        str1 = "-+0123456789.*/)("
         if calc_entry.get()[0] not in str1:
             calc_entry.insert(END, "First symbol is not number!")
             messagebox.showerror("Error!", "You did not enter the number!")
@@ -56,7 +57,7 @@ def calc(key):
                 calc_entry.insert(0, "-")
         except IndexError:
             pass
-    
+
     elif key == "%":
         calc_entry.insert(END, "/100")
 
@@ -64,8 +65,8 @@ def calc(key):
         calc_entry.insert(END, math.pi)
 
     elif key == "Exit":
-        root.after(1,root.destroy)
-        sys.exit    
+        root.after(1, root.destroy)
+        sys.exit
 
     elif key == ",":
         calc_entry.insert(END, ",")
@@ -75,9 +76,9 @@ def calc(key):
 
     elif key == "x³":
         calc_entry.insert(END, "**3")
-        
+
     elif key == "xʸ":
-        calc_entry.insert(END, "**y")
+        calc_entry.insert(END, "**")
 
     elif key == "1/x":
         calc_entry.insert(END, "**(-1)")
@@ -108,6 +109,9 @@ def calc(key):
 
     elif key == "tanh":
         calc_entry.insert(END, "=" + str(math.tanh(int(calc_entry.get()))))
+        
+    elif key == "Rad":
+        calc_entry.insert(END, "=" + str(math.radians(int(calc_entry.get()))))
 
     elif key == "(":
         calc_entry.insert(END, "(")
@@ -124,7 +128,7 @@ def calc(key):
         calc_entry.insert(END, "**1/3")
 
     elif key == "ʸ√x":
-        calc_entry.insert(END, "**1/" + calc_entry.get())
+        calc_entry.insert(END, "**1/")
 
     elif key == 'ln':
         calc_entry.insert(0, str(math.log(int(calc_entry.get()), math.e)))
@@ -139,5 +143,6 @@ def calc(key):
         if "=" in calc_entry.get():
             calc_entry.delete(0, END)
         calc_entry.insert(END, key)
+
 
 root.mainloop()
