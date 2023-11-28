@@ -1,19 +1,18 @@
+import matplotlib.pyplot as plt
+import numpy as np
 import matplotlib as mpl
 from mpl_toolkits.mplot3d import Axes3D
-import numpy as np
-import matplotlib.pyplot as plt
-mpl.rcParams['legend.fontsize'] = 10
 fig = plt.figure()
-ax = plt.axes(projection='3d')
+ax = fig.add_subplot(projection='3d')
 theta = np.linspace(-4 * np.pi, 4 * np.pi, 100)
-z = np.linspace(-2, 2, 100)
-r = z**2 + 1
-x = r * np.sin(theta)
-y = r * np.cos(theta)
-x1 = [i + np.random.uniform(-0.5, 0.5) for i in x]
-y1 = [i + np.random.uniform(-0.5, 0.5) for i in y]
-z1 = [i + np.random.uniform(-0.5, 0.5) for i in z]
-ax.plot(x, y, z, label='parametric curve')
-ax.scatter(x1, y1, z1, c = "green")
-ax.legend()
+z = np.linspace(-2, 17, 100)
+x = np.sin(theta)
+y = np.cos(theta)
+ax.plot(x, y, z)
+
+z_dots = 15*np.random.random(100)
+x_dots = np.sin(z_dots)
+y_dots = np.cos(z_dots)
+ax.scatter3D(x_dots, y_dots, z_dots, c=z, cmap="Reds")
+
 plt.show()
