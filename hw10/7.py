@@ -1,16 +1,13 @@
-import matplotlib as mpl
-from mpl_toolkits.mplot3d import Axes3D
-import numpy as np
 import matplotlib.pyplot as plt
-
-
-mpl.rcParams['legend.fontsize'] = 10
+import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
 fig = plt.figure()
-ax = plt.axes(projection='3d')
-x = np.random.randint(-1000, 1000, size = 500)
-y = np.random.randint(-1000, 1000, size = 500)
-z = np.random.randint(-1000, 1000, size = 500)
-ax.scatter(x, y, z, c = "green")
-ax.scatter(range(-100, 400), y, z, c = "blue")
-ax.scatter(x, y, z, c = "red")
+ax = fig.add_subplot(projection='3d')
+x_g = np.random.randint(-1500, 1500,size=(500))
+y_g = np.random.randint(-1000, -500, size=(500))
+z_g = np.random.randint(-1500, 1000, size=(500))
+
+s = ax.scatter(x_g, y_g, z_g, c=z_g, cmap='viridis', linewidth=0.5)
+fig.colorbar(s)
 plt.show()
+
