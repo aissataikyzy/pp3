@@ -1,61 +1,87 @@
-def input_matrix():
-    rows = int(input("Enter the number of rows: "))
-    cols = int(input("Enter the number of columns: "))
+"""
 
-    user_matrix = []
+def SVD(A):
+    def Norm(v):
+        sqs = 0
+        for i in v:
+            sqs += (i**2)
+        return np.sqrt(sqs)
 
-    for i in range(rows):
-        row = list(map(int, input(f"Enter values for row {i + 1} separated by space: ").split()))
-        user_matrix.append(row)
+    def rel_err(x1, x0):
+        return abs((x1 - x0) / x1) * 100
 
-    print("\nMatrix entered by the user:")
-    for row in user_matrix:
-        print(row)
+    def ev(a):
+        x = np.array([[np.random() for i in range(len(a))]])
+        max_iter = 10
+        old_eigval = 0
+        tlr = 0.5
+        for i in range(max_iter):
+            x = np.dot(a, x.T)
+            eigval = Norm(x.T)
+            error = rel_err(eigval, old_eigval)
+            x = x / eigval
+            e, res = [eigval, x]
+            if tlr < 0.5:
+                break
+            old_eigval = eigval
+        return e, res
 
-    return user_matrix
+    A = np.array(A)  # Convert input to NumPy array
+    B = A.T @ A
+    eig, V = ev(B)
 
-def transpose_matrix(matrix):
-    # Get the number of rows and columns
-    rows, cols = len(matrix), len(matrix[0])
+    if len(A) == 2:
+        u0 = A @ V[:, 0] / Norm(A @ V[:, 0])
+        u1 = A @ V[:, 1] / Norm(A @ V[:, 1])
+        U = np.array([u0, u1])
+    else:
+        u0 = A @ V[:, 0] / Norm(A @ V[:, 0])
+        u1 = A @ V[:, 1] / Norm(A @ V[:, 1])
+        u2 = A @ V[:, 2] / Norm(A @ V[:, 2])
+        U = np.array([u0, u1, u2])
+    U = U.T
 
-    # Create a new matrix with swapped rows and columns
-    transposed_matrix = [[matrix[j][i] for j in range(rows)] for i in range(cols)]
+    D = np.round(U.T @ A @ V, decimals=5)
+    D = np.where(np.eye(D.shape[0], dtype=bool), D, 0)
 
-    return transposed_matrix
+    return U, D, V
+"""
 
-def multiply_transpose_by_matrix(matrix):
-    # Get the number of rows and columns
-    rows, cols = len(matrix), len(matrix[0])
+"""
 
-    # Transpose the matrix
-    transposed_matrix = transpose_matrix(matrix)
+def power_iteration(matrix, initial_guess, max_iterations=100, tolerance=1e-10):
+    v = normalize_vector(initial_guess)
+    
+    for _ in range(max_iterations):
+        v_new = np.dot(matrix, v)
+        eigenvalue = np.dot(v, v_new)
+        
+        if np.linalg.norm(v_new - eigenvalue * v) < tolerance:
+            break
+        
+        v = normalize_vector(v_new)
 
-    # Initialize the result matrix with zeros
-    result_matrix = [[0] * cols for _ in range(cols)]
+    return eigenvalue, normalize_vector(v)
 
-    # Perform matrix multiplication
-    for i in range(cols):
-        for j in range(cols):
-            # Calculate the dot product of the i-th row of the transposed matrix and the j-th column of the original matrix
-            result_matrix[i][j] = sum(transposed_matrix[i][k] * matrix[k][j] for k in range(rows))
+def normalize_vector(v):
+    return v / np.linalg.norm(v)
 
-    return result_matrix
+def find_eigenvectors(matrix):
+    eigenvalues = np.linalg.eigvals(matrix)
+    eigenvectors = []
 
-# Example usage
-user_input_matrix = input_matrix()
-transposed_user_input_matrix = transpose_matrix(user_input_matrix)
-result = multiply_transpose_by_matrix(user_input_matrix)
+    for eigenvalue in eigenvalues:
+        system_matrix = matrix - eigenvalue * np.identity(matrix.shape[0])
+        _, normalized_v = power_iteration(system_matrix, np.random.rand(matrix.shape[0]))
+        
+        # Ensure that the eigenvector is unique by checking eigenvalues
+        is_unique = all(
+            not np.allclose(eigenvalue, ev[0]) for ev in eigenvectors
+        )
+        
+        # Check if the eigenvalue and eigenvector are unique
+        if is_unique:
+            eigenvectors.append((eigenvalue, normalized_v))
 
-# Print the original and transposed matrices
-print("\nOriginal Matrix:")
-for row in user_input_matrix:
-    print(row)
-
-print("\nTransposed Matrix:")
-for row in transposed_user_input_matrix:
-    print(row)
-
-# Print the result of matrix multiplication
-print("\nResult of Matrix Multiplication (Transpose * Matrix):")
-for row in result:
-    print(row)
+    return eigenvectors
+"""

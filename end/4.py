@@ -44,6 +44,6 @@ user_input_matrix = input_matrix()
 
 eigenvalues = find_eigenvalues(user_input_matrix)
 
-print("\nсобственные значения:")
+print("\n собственные значения:")
 for eigenvalue in eigenvalues:
     print(eigenvalue)
