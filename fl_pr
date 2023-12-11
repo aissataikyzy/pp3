@@ -1,0 +1,172 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+dx = 0.01
+dy = 0.01
+dt = 0.0001
+Re = 100
+rho = 1000
+nu = 1 / Re
+
+eps = 1e-6
+eps_P = 1e-6
+stop_iteration = 1e4
+stop_iteration_P = 1e6
+
+x = np.linspace(0, 1, int(1/dx) + 1)
+y = np.linspace(0, 1, int(1/dy) + 1)
+
+N = len(x)
+M = len(y)
+
+M1 = int(0.2 / dy)
+M2 = int(0.8 / dy)
+M3 = int(0.4 / dx)
+
+U_old, U_s, U_new = np.zeros((M, N)), np.zeros((M, N)), np.zeros((M, N))
+V_old, V_s, V_new = np.zeros((M, N)), np.zeros((M, N)), np.zeros((M, N))
+P_old, P_new = np.zeros((M, N)), np.zeros((M, N))
+
+
+# Initialization at t=0
+U_old[:, :] = 0
+V_old[:, :] = 0
+P_old[:, :] = 0
+
+# Inlet
+U_old[M2:, 0:M3] = 1
+V_old[M2:, 0:M3] = 0
+P_old[M2:, 0:M3] = 1
+
+# Walls
+U_old[0:M2, 0:M3] = 0
+U_old[0, M3:] = 0
+U_old[M - 1, :] = 0
+
+V_old[0:M2, 0:M3] = 0
+V_old[0, M3:] = 0
+V_old[M - 1, :] = 0
+
+P_old[0:M2, 0:M3 - 1] = P_old[0:M2, 1:M3]
+P_old[0, M3:] = P_old[1, M3:]
+P_old[M - 1, :] = P_old[M - 2, :]
+
+# Outlet
+U_old[:, N - 1] = U_old[:, N - 2]
+V_old[:, N - 1] = 0
+P_old[:, N - 1] = 0
+
+max_value = 1
+iteration = 0
+while max_value > eps and iteration < stop_iteration:
+    # Step 1: Burgers equation
+    U_s[1:-1, 1:-1] = U_old[1:-1, 1:-1] - dt * (
+        U_old[1:-1, 1:-1] * (U_old[1:-1, 2:] - U_old[1:-1, 0:-2]) / (2 * dx)
+        + V_old[1:-1, 1:-1] * (U_old[2:, 1:-1] - U_old[0:-2, 1:-1]) / (2 * dy)
+        - nu * (
+            (U_old[1:-1, 2:] - 2 * U_old[1:-1, 1:-1] + U_old[1:-1, 0:-2]) / dx ** 2
+            + (U_old[2:, 1:-1] - 2 * U_old[1:-1, 1:-1] + U_old[0:-2, 1:-1]) / dy ** 2
+        )
+    )
+
+    V_s[1:-1, 1:-1] = V_old[1:-1, 1:-1] - dt * (
+        U_old[1:-1, 1:-1] * (V_old[1:-1, 2:] - V_old[1:-1, 0:-2]) / (2 * dx)
+        + V_old[1:-1, 1:-1] * (V_old[2:, 1:-1] - V_old[0:-2, 1:-1]) / (2 * dy)
+        - nu * (
+            (V_old[1:-1, 2:] - 2 * V_old[1:-1, 1:-1] + V_old[1:-1, 0:-2]) / dx ** 2
+            + (V_old[2:, 1:-1] - 2 * V_old[1:-1, 1:-1] + V_old[0:-2, 1:-1]) / dy ** 2
+        )
+    )
+
+    U_s[0, M3:] = 0
+    U_s[M - 1, :] = 0
+    U_s[0:M2, 0:M3] = 0
+    U_s[M2:, 0:M3] = 1
+    U_s[:, N - 1] = U_s[:, N - 2]
+
+    V_s[0, M3:] = 0
+    V_s[M - 1, :] = 0
+    V_s[:, 0:M3] = 0
+    V_s[:, N - 1] = 0
+
+    max_P = 1
+    iter_P = 0
+
+    # Step 2: Poisson's equation
+    while max_P > eps_P and iter_P < stop_iteration_P:
+        P_new[1:-1, 1:-1] = (
+            dy ** 2 * (P_old[1:-1, 2:] + P_old[1:-1, 0:-2])
+            + dx ** 2 * (P_old[2:, 1:-1] + P_old[0:-2, 1:-1])
+        ) / (2 * (dx ** 2 + dy ** 2)) - dx ** 2 * dy ** 2 * rho / (
+            2 * dt * (dx ** 2 + dy ** 2)
+        ) * (
+            (U_s[1:-1, 2:] - U_s[1:-1, 0:-2]) / (2 * dx)
+            + (V_s[2:, 1:-1] - V_s[0:-2, 1:-1]) / (2 * dy)
+        )
+
+        P_new[0:M2, 0:M3 - 1] = P_new[0:M2, 1:M3]
+        P_new[M2:, 0:M3] = 1
+        P_new[:, N - 1] = 0
+        P_new[0, M3:] = P_new[1, M3:]
+        P_new[M - 1, :] = P_new[M - 2, :]
+
+        max_P = np.max(np.abs(P_new - P_old))
+
+        P_old[:, :] = P_new[:, :]
+
+        iter_P += 1
+
+    # Step 3: Corrector
+    U_new[1:-1, 1:-1] = U_s[1:-1, 1:-1] - dt / rho * (
+        P_new[1:-1, 2:] - P_new[1:-1, 0:-2]
+    ) / (2 * dx)
+    V_new[1:-1, 1:-1] = V_s[1:-1, 1:-1] - dt / rho * (
+        P_new[2:, 1:-1] - P_new[0:-2, 1:-1]
+    ) / (2 * dy)
+
+    U_new[0:M2, 0:M3] = 0
+    U_new[M2:, 0:M3] = 1
+    U_new[:, N - 1] = U_new[:, N - 2]
+    U_new[0, :] = 0
+    U_new[M - 1, :] = 0
+
+    V_new[0:M2, 0:M3] = 0
+    V_new[M2:, 0:M3] = 0
+    V_new[:, N - 1] = V_new[:, N - 2]
+    V_new[0, :] = 0
+    V_new[M - 1, :] = 0
+
+    max_value = np.max(np.abs(U_new - U_old))
+    U_old[:, :] = U_new[:, :]
+    V_old[:, :] = V_new[:, :]
+
+    iteration += 1
+
+# Plotting
+def plot_contour_and_streamplot(ax, X, Y, data, title, xlabel, ylabel, color_label=None):
+    contour = ax.contourf(X, Y, data, cmap='viridis')
+    ax.set_title(title)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    plt.colorbar(contour, ax=ax, label=color_label)
+    ax.streamplot(X, Y, U_new, V_new, color='white', linewidth=0.5)
+
+X, Y = np.meshgrid(x, y)
+
+# Create subplots
+fig, axs = plt.subplots(2, 2, figsize=(10, 8))
+
+# Plot U
+plot_contour_and_streamplot(axs[0, 0], X, Y, U_new, 'U', 'X', 'Y', 'u')
+
+# Plot V
+plot_contour_and_streamplot(axs[0, 1], X, Y, V_new, 'V', 'X', 'Y', 'v')
+
+# Plot P
+plot_contour_and_streamplot(axs[1, 0], X, Y, P_new, 'P', 'X', 'Y', 'p')
+
+# Plot U + V
+plot_contour_and_streamplot(axs[1, 1], X, Y, np.sqrt(U_new**2 + V_new**2), 'U + V', 'X', 'Y')
+
+plt.tight_layout()
+plt.show()
